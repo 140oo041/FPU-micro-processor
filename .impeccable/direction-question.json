@@ -1,0 +1,16 @@
+{
+  "title": "Choose the FPU console direction",
+  "question": "Use the assigned bench-calculator interface, steer it, or re-roll the concept.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Bench Calculator",
+      "kicker": "ASSIGNED DIRECTION",
+      "lineage": "RPN scientific calculators and embedded lab instruments",
+      "body": "A compact native PC console built around a broad instrument display, explicit operand fields, tactile operation keys, and a running hexadecimal transmission tape. Connect, compose, transmit, trigger SPI, and inspect output in one view. The calculator grammar keeps repeated work fast while status labels preserve the UART model. Honest risk: the familiar calculator form could hide protocol detail, so wire bytes remain first-class and every action uses explicit firmware terminology."
+    }
+  ],
+  "reroll": true,
+  "canon": true,
+  "steer": true
+}
