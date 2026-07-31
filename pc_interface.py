@@ -56,6 +56,16 @@ def parse_acc(value: Any) -> int:
     return acc
 
 
+def crc8_autosar(data: bytes) -> int:
+    """Calculate CRC-8/AUTOSAR (poly 0x2F, init/xorout 0xFF)."""
+    crc = 0xFF
+    for value in data:
+        crc ^= value
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x2F) & 0xFF if crc & 0x80 else (crc << 1) & 0xFF
+    return crc ^ 0xFF
+
+
 def encode_operation(
     operation: str, operand_a: Any, operand_b: Any = None, acc: Any = 0
 ) -> bytes:
@@ -100,6 +110,7 @@ def encode_spi_frame(
     frame.extend(bfloat16_bytes(operand_a))
     if binary_flag:
         frame.extend(bfloat16_bytes(operand_b))
+    frame.append(crc8_autosar(frame))
     return bytes(frame)
 
 
@@ -745,7 +756,7 @@ FORM: Scientific-calculator panel, fifth grounded direction; compact two-column 
       <div class="readout">
         <div class="readout-top">
           <span id="readoutTitle" class="operation-name">ADD · BINARY</span>
-          <span id="frameLength" class="operation-name">UART 6B · SPI 5B · TAG 0</span>
+          <span id="frameLength" class="operation-name">UART 6B · SPI 6B · TAG 0</span>
         </div>
         <div id="formula" class="formula">1.0 + 2.0</div>
         <div class="wire-row">

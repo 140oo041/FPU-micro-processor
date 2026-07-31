@@ -90,14 +90,14 @@ Binary operations (`ADD`, `SUB`, `MUL`, and `DIV`) use these layouts:
 
 ```text
 UART: [command] [operand A: 2 bytes] [operand B: 2 bytes] [accumulator]
-SPI:  [header]  [operand A: 2 bytes] [operand B: 2 bytes]
+SPI:  [header]  [operand A: 2 bytes] [operand B: 2 bytes] [CRC]
 ```
 
 Unary operations (`ABS`, `NEG`, `SLT`, and `NOP`) use:
 
 ```text
 UART: [command] [operand A: 2 bytes] [accumulator]
-SPI:  [header]  [operand A: 2 bytes]
+SPI:  [header]  [operand A: 2 bytes] [CRC]
 ```
 
 Operands are the upper 16 bits of an IEEE-754 single-precision value (bfloat16 representation). The SPI header contains the opcode, accumulator flag, binary/unary flag, and three-bit tag.
@@ -106,10 +106,10 @@ For example, `ADD 1.0, 2.0` with accumulator disabled and tag zero displays:
 
 ```text
 UART TX:   41 3F 80 40 00 00
-SPI FRAME: 08 3F 80 40 00
+SPI FRAME: 08 3F 80 40 00 34
 ```
 
-`0x41` is the ASCII `A` UART command. Firmware consumes it and constructs the `0x08` SPI header.
+`0x41` is the ASCII `A` UART command. Firmware consumes it and constructs the `0x08` SPI header. `0x34` is the CRC-8/AUTOSAR value calculated over the preceding five SPI bytes.
 
 ## Raw queue and control actions
 

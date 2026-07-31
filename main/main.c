@@ -122,7 +122,7 @@ void app_main(void)
             UART_NUM_0,
             data,
             sizeof(data) - 1,
-            pdMS_TO_TICKS(2500)
+            pdMS_TO_TICKS(1000)
         );
         ESP_LOGI(TAG, "Received %d bytes", count);
         if (count > 0) {
@@ -192,4 +192,3 @@ void app_main(void)
 }
 
 // typedef enum op_type = {ADD,SUB,MUL,DIV,}
-

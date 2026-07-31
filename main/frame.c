@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
+#include <string.h>
 
 #define ADD 0b000
 #define SUB 0b001
@@ -38,6 +40,24 @@ void queue_byte(uint8_t byte) {
     transmit_idx_higher = (transmit_idx_higher + 1) % DATA_BUFFERSIZE;
 }
 
+uint8_t crc8_autosar(const uint8_t *bytes, size_t length) {
+    uint8_t crc = 0xFF;
+
+    for (size_t byte_index = 0; byte_index < length; byte_index++) {
+        crc ^= bytes[byte_index];
+
+        for (uint8_t bit = 0; bit < 8; bit++) {
+            if ((crc & 0x80) != 0) {
+                crc = (uint8_t)((crc << 1) ^ 0x2F);
+            } else {
+                crc = (uint8_t)(crc << 1);
+            }
+        }
+    }
+
+    return (uint8_t)(crc ^ 0xFF);
+}
+
 uint8_t read_byte() {
     assert(receive_idx_lower != receive_idx_higher);
     uint8_t byte = receive_buffer_data[receive_idx_lower];
@@ -46,56 +66,104 @@ uint8_t read_byte() {
 }
 
 void fpu_add(uint16_t op1, uint16_t op2, uint8_t acc) {
-    queue_byte(binary_op(ADD,acc));
-    queue_byte((uint8_t)(op1 >>8));
-    queue_byte((uint8_t)(op1&0xFF));
-    queue_byte((uint8_t)(op2 >>8));
-    queue_byte((uint8_t)(op2&0xFF));
+    uint8_t frame[] = {
+        binary_op(ADD, acc),
+        (uint8_t)(op1 >> 8),
+        (uint8_t)(op1 & 0xFF),
+        (uint8_t)(op2 >> 8),
+        (uint8_t)(op2 & 0xFF)
+    };
+    for (size_t i = 0; i < sizeof(frame); i++) {
+        queue_byte(frame[i]);
+    }
+    queue_byte(crc8_autosar(frame, sizeof(frame)));
 }
 
 void fpu_sub(uint16_t op1, uint16_t op2, uint8_t acc) {
-    queue_byte(binary_op(SUB,acc));
-    queue_byte((uint8_t)(op1 >>8));
-    queue_byte((uint8_t)(op1&0xFF));
-    queue_byte((uint8_t)(op2 >>8));
-    queue_byte((uint8_t)(op2&0xFF));
+    uint8_t frame[] = {
+        binary_op(SUB, acc),
+        (uint8_t)(op1 >> 8),
+        (uint8_t)(op1 & 0xFF),
+        (uint8_t)(op2 >> 8),
+        (uint8_t)(op2 & 0xFF)
+    };
+    for (size_t i = 0; i < sizeof(frame); i++) {
+        queue_byte(frame[i]);
+    }
+    queue_byte(crc8_autosar(frame, sizeof(frame)));
 }
 void fpu_mul(uint16_t op1, uint16_t op2, uint8_t acc) {
-    queue_byte(binary_op(MUL,acc));
-    queue_byte((uint8_t)(op1 >>8));
-    queue_byte((uint8_t)(op1&0xFF));
-    queue_byte((uint8_t)(op2 >>8));
-    queue_byte((uint8_t)(op2&0xFF));
+    uint8_t frame[] = {
+        binary_op(MUL, acc),
+        (uint8_t)(op1 >> 8),
+        (uint8_t)(op1 & 0xFF),
+        (uint8_t)(op2 >> 8),
+        (uint8_t)(op2 & 0xFF)
+    };
+    for (size_t i = 0; i < sizeof(frame); i++) {
+        queue_byte(frame[i]);
+    }
+    queue_byte(crc8_autosar(frame, sizeof(frame)));
 }
 void fpu_div(uint16_t op1, uint16_t op2, uint8_t acc) {
-    queue_byte(binary_op(DIV,acc));
-    queue_byte((uint8_t)(op1 >>8));
-    queue_byte((uint8_t)(op1&0xFF));
-    queue_byte((uint8_t)(op2 >>8));
-    queue_byte((uint8_t)(op2&0xFF));
+    uint8_t frame[] = {
+        binary_op(DIV, acc),
+        (uint8_t)(op1 >> 8),
+        (uint8_t)(op1 & 0xFF),
+        (uint8_t)(op2 >> 8),
+        (uint8_t)(op2 & 0xFF)
+    };
+    for (size_t i = 0; i < sizeof(frame); i++) {
+        queue_byte(frame[i]);
+    }
+    queue_byte(crc8_autosar(frame, sizeof(frame)));
 }
 void fpu_abs(uint16_t op1, uint8_t acc) {
-    queue_byte(unary_op(ABS,acc));
-    queue_byte((uint8_t)(op1 >>8));
-    queue_byte((uint8_t)(op1&0xFF));
+    uint8_t frame[] = {
+        unary_op(ABS, acc),
+        (uint8_t)(op1 >> 8),
+        (uint8_t)(op1 & 0xFF)
+    };
+    for (size_t i = 0; i < sizeof(frame); i++) {
+        queue_byte(frame[i]);
+    }
+    queue_byte(crc8_autosar(frame, sizeof(frame)));
 }
 
 void fpu_slt(uint16_t op1, uint8_t acc) {
-    queue_byte(unary_op(SLT,acc));
-    queue_byte((uint8_t)(op1 >>8));
-    queue_byte((uint8_t)(op1&0xFF));
+    uint8_t frame[] = {
+        unary_op(SLT, acc),
+        (uint8_t)(op1 >> 8),
+        (uint8_t)(op1 & 0xFF)
+    };
+    for (size_t i = 0; i < sizeof(frame); i++) {
+        queue_byte(frame[i]);
+    }
+    queue_byte(crc8_autosar(frame, sizeof(frame)));
 }
 
 void fpu_neg(uint16_t op1, uint8_t acc) {
-    queue_byte(unary_op(NEG,acc));
-    queue_byte((uint8_t)(op1 >>8));
-    queue_byte((uint8_t)(op1&0xFF));
+    uint8_t frame[] = {
+        unary_op(NEG, acc),
+        (uint8_t)(op1 >> 8),
+        (uint8_t)(op1 & 0xFF)
+    };
+    for (size_t i = 0; i < sizeof(frame); i++) {
+        queue_byte(frame[i]);
+    }
+    queue_byte(crc8_autosar(frame, sizeof(frame)));
 }
 
 void fpu_nop(uint16_t op1, uint8_t acc) {
-    queue_byte(unary_op(NOP,acc));
-    queue_byte((uint8_t)(op1 >>8));
-    queue_byte((uint8_t)(op1&0xFF));
+    uint8_t frame[] = {
+        unary_op(NOP, acc),
+        (uint8_t)(op1 >> 8),
+        (uint8_t)(op1 & 0xFF)
+    };
+    for (size_t i = 0; i < sizeof(frame); i++) {
+        queue_byte(frame[i]);
+    }
+    queue_byte(crc8_autosar(frame, sizeof(frame)));
 }
 
 uint16_t float_to_bytes(float f) {
