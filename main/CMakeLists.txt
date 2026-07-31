@@ -1,4 +1,8 @@
-idf_component_register(SRCS "frame.c" "main.c"
-                    INCLUDE_DIRS "."
-                    REQUIRES esp_driver_spi esp_driver_uart)
+# idf_component_register(SRCS "frame.c" "main.c"
+#                     INCLUDE_DIRS "."
+#                     REQUIRES esp_driver_spi esp_driver_uart)
+
+idf_component_register(SRCS "main.c"
+INCLUDE_DIRS "."
+REQUIRES driver)
 
